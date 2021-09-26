@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   HttpException,
 } from '@nestjs/common';
-import validator from 'validator';
 import { DBService } from '../services/db.service';
 
 type AuthRequest = {
