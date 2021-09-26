@@ -5,6 +5,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import validator from 'validator';
+import { DBService } from '../services/db.service';
 
 type AuthRequest = {
   headers: { authorization?: string };
@@ -12,10 +13,12 @@ type AuthRequest = {
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
+  constructor(private readonly dbService: DBService) {}
+
   canActivate(context: ExecutionContext): boolean {
     const request: AuthRequest = context.switchToHttp().getRequest();
     const apiKey = request.headers.authorization || '';
-    if (validator.isUUID(apiKey)) {
+    if (this.dbService.isApiKeyValid(apiKey)) {
       return true;
     }
     throw new HttpException('Unauthorized', 401);

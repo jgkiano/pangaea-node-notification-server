@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { PublishController } from './controllers/publish.controller';
 import { SubscriptionController } from './controllers/subscription.controller';
 import { AuthorizationController } from './controllers/authorization.controller';
+import { DBService } from './services/db.service';
 
 @Module({
   imports: [],
@@ -13,6 +14,6 @@ import { AuthorizationController } from './controllers/authorization.controller'
     SubscriptionController,
     AuthorizationController,
   ],
-  providers: [AppService],
+  providers: [AppService, DBService],
 })
 export class AppModule {}
