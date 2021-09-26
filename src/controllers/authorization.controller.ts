@@ -1,6 +1,5 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { GenerateApiKeyDto } from '../models/GenerateApiKeyDto';
-import { v4 as uuidv4 } from 'uuid';
 import { ApiKeyCreationGuard } from '../guards/apiKeyCreationGuard';
 import { DBService } from '../services/db.service';
 
