@@ -34,8 +34,14 @@ export class DBService {
   }
 
   async isValidApiKey(apiKey: string): Promise<boolean> {
-    const existingApiKey = await DBService.redisClient.get(`apiKey-${apiKey}`);
-    return typeof existingApiKey === 'string';
+    try {
+      const existingApiKey = await DBService.redisClient.get(
+        `apiKey-${apiKey}`,
+      );
+      return typeof existingApiKey === 'string';
+    } catch (error) {
+      handleException(error);
+    }
   }
 
   async createApiKey(username: string) {
