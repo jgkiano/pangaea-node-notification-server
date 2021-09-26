@@ -9,7 +9,8 @@ import { RedisClientType } from 'redis/dist/lib/client';
  * ready: re-connection was successful
  * reconnecting: re-connecting
  * error: connection lost
- * end: ??
+ * end: force kill redis
+ * quit: safe terminate redis
  */
 
 @Injectable()
@@ -17,6 +18,7 @@ export class DBService {
   private static redisClient: RedisClientType;
   private static REDIS_HOST = process.env.REDIS_HOST || 'localhost';
   private static REDIS_PORT = process.env.REDIS_PORT || 6379;
+
   static async initalize(): Promise<void> {
     return new Promise((resolve, reject) => {
       DBService.redisClient = createClient({
