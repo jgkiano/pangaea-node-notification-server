@@ -33,12 +33,21 @@ export class DBService {
     });
   }
 
+  async isExistingUser(username: string): Promise<boolean> {
+    try {
+      const existingUser = await DBService.redisClient.get(`user-${username}`);
+      return existingUser !== null;
+    } catch (error) {
+      handleException(error);
+    }
+  }
+
   async isValidApiKey(apiKey: string): Promise<boolean> {
     try {
       const existingApiKey = await DBService.redisClient.get(
         `apiKey-${apiKey}`,
       );
-      return typeof existingApiKey === 'string';
+      return existingApiKey !== null;
     } catch (error) {
       handleException(error);
     }
@@ -77,15 +86,6 @@ export class DBService {
       return apiKey;
     } catch (error) {
       handleException(error);
-    }
-  }
-
-  private async isExistingUser(username: string) {
-    try {
-      const existingUser = await DBService.redisClient.get(`user-${username}`);
-      return typeof existingUser === 'string';
-    } catch (error) {
-      return null; // TODO: check if redis connection issue
     }
   }
 }
