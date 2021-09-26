@@ -1,4 +1,9 @@
-import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  ConflictException,
+} from '@nestjs/common';
 import { DBService } from '../services/db.service';
 
 type ApiKeyCreationRequest = {
@@ -15,6 +20,7 @@ export class ApiKeyCreationGuard implements CanActivate {
         .switchToHttp()
         .getRequest().body;
       const isExistingUser = await this.dbService.isExistingUser(username);
+      if (isExistingUser) throw new ConflictException('user already exists');
       return !isExistingUser;
     } catch (error) {
       throw error;
