@@ -1,8 +1,10 @@
-import { Controller, Post } from '@nestjs/common';
+import { Controller, Post, UseGuards } from '@nestjs/common';
+import { AuthorizationGuard } from '../guards/authorization.guard';
 
-@Controller()
+@Controller('publish')
+@UseGuards(AuthorizationGuard)
 export class PublishController {
-  @Post('/publish')
+  @Post()
   publish(): { message: string } {
     return { message: 'Hey there' };
   }
