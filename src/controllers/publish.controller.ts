@@ -5,16 +5,19 @@ import {
   PublishTopicParamDto,
   PublishTopicBodyDto,
 } from '../models/PublishTopicDto';
+import { DBService } from '../services/db.service';
 
 @Controller('publish')
 @UseGuards(AuthorizationGuard)
 @UseGuards(PublishGuard)
 export class PublishController {
+  constructor(private readonly dbService: DBService) {}
+
   @Post(':topic')
   publish(
     @Param() params: PublishTopicParamDto,
     @Body() body: PublishTopicBodyDto,
-  ) {
-    return { topc: params.topic, body };
+  ): Promise<{ status: string }> {
+    return this.dbService.publishTopic(params.topic, body);
   }
 }
