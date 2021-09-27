@@ -2,8 +2,10 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisClientType } from 'redis/dist/lib/client';
-import { handleException } from '../util';
 import { PubSubListener } from 'redis/dist/lib/commands-queue';
+import { handleException } from '../util';
+import { isUUID } from 'class-validator';
+
 /**
  * redis states:
  * connect: re-connecting
@@ -59,6 +61,7 @@ export class DBService {
 
   async isValidApiKey(apiKey: string): Promise<boolean> {
     try {
+      if (!isUUID(apiKey)) return false;
       const existingApiKey = await DBService.redisClient.get(
         `apiKey-${apiKey}`,
       );
@@ -80,8 +83,29 @@ export class DBService {
     }
   }
 
-  async subscribeTopic(topic: string, url: string) {
-    DBService.redisSubscriber.subscribe(topic, () => null);
+  async subscribeTopic(
+    topic: string,
+    url: string,
+  ): Promise<{ url: string; topic: string }> {
+    try {
+      await DBService.redisSubscriber.subscribe(
+        topic,
+        this.subscriptionListener,
+      );
+      return { url, topic };
+    } catch (error) {
+      handleException(error);
+    }
+  }
+
+  async publishTopic(topic: string, body: any): Promise<{ status: string }> {
+    try {
+      await DBService.redisClient.publish(topic, JSON.stringify(body));
+      return { status: 'published' };
+    } catch (error) {
+      console.log(error);
+      handleException(error);
+    }
   }
 
   private async createUser(username: string) {
@@ -111,4 +135,8 @@ export class DBService {
       handleException(error);
     }
   }
+
+  private subscriptionListener: PubSubListener = (channel, message) => {
+    console.log(`[redis]: ${channel} : ${message}`);
+  };
 }
