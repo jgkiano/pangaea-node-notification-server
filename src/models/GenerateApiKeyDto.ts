@@ -1,7 +1,7 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsAlphanumeric } from 'class-validator';
 
 export class GenerateApiKeyDto {
   @IsNotEmpty()
-  @IsString()
+  @IsAlphanumeric()
   username: string;
 }

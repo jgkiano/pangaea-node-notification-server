@@ -4,7 +4,6 @@ import {
   ExecutionContext,
   HttpException,
 } from '@nestjs/common';
-import validator from 'validator';
 import { DBService } from '../services/db.service';
 
 type AuthRequest = {
@@ -15,10 +14,10 @@ type AuthRequest = {
 export class AuthorizationGuard implements CanActivate {
   constructor(private readonly dbService: DBService) {}
 
-  canActivate(context: ExecutionContext): boolean {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const request: AuthRequest = context.switchToHttp().getRequest();
     const apiKey = request.headers.authorization || '';
-    if (this.dbService.isApiKeyValid(apiKey)) {
+    if (await this.dbService.isValidApiKey(apiKey)) {
       return true;
     }
     throw new HttpException('Unauthorized', 401);
