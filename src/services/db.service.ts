@@ -25,12 +25,18 @@ export class DBService {
     return new Promise((resolve, reject) => {
       DBService.redisClient = createClient({
         url: `redis://${DBService.REDIS_HOST}:${DBService.REDIS_PORT}`,
+        socket: {
+          keepAlive: 1,
+        },
+        database: 1,
       });
-      DBService.redisClient.on('error', console.log);
+      DBService.redisClient.on('error', (error) => {
+        console.log('[redis]', error);
+      });
       DBService.redisClient.on('connect', () =>
-        console.log('[redis]: connect...'),
+        console.log('[redis', 'connecting..'),
       );
-      DBService.redisClient.on('ready', () => console.log('[redis]: ready...'));
+      DBService.redisClient.on('ready', () => console.log('[redis', 'ready'));
       DBService.redisClient
         .connect()
         .then(() => {
@@ -75,7 +81,7 @@ export class DBService {
   }
 
   async subscribeTopic(topic: string, url: string) {
-    DBService.redisSubscriber.subscribe(topic, this.handleOnMessage);
+    DBService.redisSubscriber.subscribe(topic, () => null);
   }
 
   private async createUser(username: string) {
@@ -101,6 +107,4 @@ export class DBService {
       handleException(error);
     }
   }
-
-  private async handleOnMessage(message, channel) {}
 }
