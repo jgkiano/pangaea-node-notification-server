@@ -23,39 +23,48 @@ export class DBService {
   private static redisSubscriber: RedisClientType;
   private static REDIS_HOST = process.env.REDIS_HOST || 'localhost';
   private static REDIS_PORT = process.env.REDIS_PORT || 6379;
+  private static DB_USER_PREFIX = 'user-';
+  private static DB_TOPIC_PREFIX = 'topic-';
+  private static DB_API_KEY_PREFIX = 'apiKey-';
 
   static async initalize(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      DBService.redisClient = createClient({
-        url: `redis://${DBService.REDIS_HOST}:${DBService.REDIS_PORT}`,
-        socket: {
-          keepAlive: 1,
-        },
-        database: 1,
-      });
-      // TODO: test maximum number of pulishers and subscribers and client connections
-      DBService.redisClient.on('error', (error) => {
-        console.log('[redis]', error);
-      });
-      DBService.redisClient.on('connect', () =>
-        console.log('[redis', 'connecting..'),
-      );
-      DBService.redisClient.on('ready', () => console.log('[redis', 'ready'));
-      DBService.redisClient
-        .connect()
-        .then(() => {
-          DBService.redisSubscriber = DBService.redisClient.duplicate();
-          return DBService.redisSubscriber.connect();
-        })
-        .then(resolve)
-        .catch(reject);
+    return new Promise(async (resolve, reject) => {
+      try {
+        DBService.redisClient = createClient({
+          url: `redis://${DBService.REDIS_HOST}:${DBService.REDIS_PORT}`,
+        });
+        // TODO: test maximum number of pulishers and subscribers and client connections
+        DBService.redisClient.on('error', (error) => {
+          console.log('[redis]', error);
+        });
+        DBService.redisClient.on('connect', () =>
+          console.log('[redis', 'connecting..'),
+        );
+        DBService.redisClient.on('ready', () => console.log('[redis', 'ready'));
+        await DBService.redisClient.connect();
+        DBService.redisSubscriber = DBService.redisClient.duplicate();
+        await DBService.redisSubscriber.connect();
+        const existingTopics =
+          (await DBService.redisClient.keys(`${this.DB_TOPIC_PREFIX}*`)) || [];
+        const result = existingTopics.map((topic) =>
+          DBService.redisSubscriber.subscribe(
+            topic,
+            DBService.subscriptionListener,
+          ),
+        );
+        await Promise.all(result);
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
     });
   }
 
   async isExistingUser(username: string): Promise<boolean> {
     try {
-      const existingUser = await DBService.redisClient.get(`user-${username}`);
-      return existingUser !== null;
+      const key = `${DBService.DB_USER_PREFIX}${username}`;
+      const exists = await DBService.redisClient.exists(key);
+      return exists;
     } catch (error) {
       handleException(error);
     }
@@ -63,11 +72,10 @@ export class DBService {
 
   async isValidApiKey(apiKey: string): Promise<boolean> {
     try {
+      const key = `${DBService.DB_API_KEY_PREFIX}${apiKey}`;
       if (!isUUID(apiKey)) return false;
-      const existingApiKey = await DBService.redisClient.get(
-        `apiKey-${apiKey}`,
-      );
-      return existingApiKey !== null;
+      const exists = await DBService.redisClient.exists(key);
+      return exists;
     } catch (error) {
       handleException(error);
     }
@@ -78,8 +86,8 @@ export class DBService {
       if (await this.isExistingUser(username)) {
         throw new ConflictException('user already exists');
       }
-      await this.createUser(username);
-      return await this.createUUIDApiKey(username);
+      const userId = await this.createUser(username);
+      return await this.createUUIDApiKey(userId);
     } catch (error) {
       handleException(error);
     }
@@ -88,21 +96,18 @@ export class DBService {
   async subscribeTopic(data: {
     topic: string;
     url: string;
+    apiKey: string;
   }): Promise<{ url: string; topic: string }> {
+    console.log(data);
     try {
-      const urls = await this.getUrls(data.topic);
-      console.log(urls);
-      if (Array.isArray(urls) && !urls.includes(data.url)) {
-        await this.saveUrl(data, urls);
-      }
+      const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
+      await DBService.redisClient.HSET(key, data.apiKey, data.url);
       await DBService.redisSubscriber.subscribe(
-        data.topic,
-        this.subscriptionListener,
+        key,
+        DBService.subscriptionListener,
       );
-      // console.log(urls);
       return data;
     } catch (error) {
-      console.log(error);
       handleException(error);
     }
   }
@@ -110,80 +115,50 @@ export class DBService {
   async publishTopic(data: {
     topic: string;
     body: any;
-  }): Promise<{ status: string }> {
+  }): Promise<{ status: 'published' }> {
     try {
-      await DBService.redisClient.publish(
-        data.topic,
-        JSON.stringify(data.body),
-      );
+      const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
+      await DBService.redisClient.publish(key, JSON.stringify(data.body));
       return { status: 'published' };
     } catch (error) {
-      console.log(error);
       handleException(error);
     }
   }
 
   private async createUser(username: string) {
     try {
-      await DBService.redisClient.set(
-        `user-${username}`,
-        JSON.stringify({
-          userId: username,
-          createdAt: Date.now(),
-          id: uuidv4(),
-        }), // TODO: use hSet
-      );
+      const key = `${DBService.DB_USER_PREFIX}${username}`;
+      const userId = uuidv4();
+      await DBService.redisClient.hSet(key, 'username', username);
+      await DBService.redisClient.hSet(key, 'createdAt', Date.now().toString());
+      await DBService.redisClient.hSet(key, 'id', userId);
+      return userId;
     } catch (error) {
       throw error;
     }
   }
 
-  private async saveUrl(
-    data: { url: string; topic: string },
-    urls?: string[],
-  ): Promise<void> {
-    try {
-      const existingUrls = Array.isArray(urls)
-        ? [...urls]
-        : await this.getUrls(data.topic);
-      existingUrls.push(data.url);
-      await DBService.redisClient.set(
-        `topic-${data.topic}`,
-        JSON.stringify(existingUrls),
-      );
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  private async getUrls(topic: string): Promise<string[]> {
-    try {
-      const data = await DBService.redisClient.get(`topic-${topic}`);
-      return JSON.parse(data);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  private async createUUIDApiKey(username: string): Promise<string> {
+  private async createUUIDApiKey(userId: string): Promise<string> {
     try {
       const apiKey = uuidv4();
-      await DBService.redisClient.set(
-        `apiKey-${apiKey}`,
-        JSON.stringify({ userId: username, createdAt: Date.now() }), // TODO: use hset
-      );
+      const key = `${DBService.DB_API_KEY_PREFIX}${apiKey}`;
+      await DBService.redisClient.hSet(key, 'userId', userId);
+      await DBService.redisClient.hSet(key, 'createdAt', Date.now().toString());
       return apiKey;
     } catch (error) {
       throw error;
     }
   }
 
-  private subscriptionListener: PubSubListener = async (message, topic) => {
+  private static subscriptionListener: PubSubListener = async (
+    message,
+    topic,
+  ) => {
     try {
       console.log(`[redis]: ${topic} : ${message}`);
-      const urls = await this.getUrls(topic);
+      const urls = (await DBService.redisClient.hVals(topic)) || [];
       const result = urls.map((url) =>
-        this.transmitMessage({ topic, message, url }),
+        DBService.transmitMessage({ topic, message, url }),
       );
       Promise.all(result);
     } catch (error) {
@@ -191,7 +166,7 @@ export class DBService {
     }
   };
 
-  private transmitMessage = async (transmission: {
+  private static transmitMessage = async (transmission: {
     url: string;
     message: string;
     topic: string;
