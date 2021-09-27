@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisClientType } from 'redis/dist/lib/client';
 import { PubSubListener } from 'redis/dist/lib/commands-queue';
+import axios from 'axios';
 import { handleException } from '../util';
 import { isUUID } from 'class-validator';
 
@@ -84,24 +85,37 @@ export class DBService {
     }
   }
 
-  async subscribeTopic(
-    topic: string,
-    url: string,
-  ): Promise<{ url: string; topic: string }> {
+  async subscribeTopic(data: {
+    topic: string;
+    url: string;
+  }): Promise<{ url: string; topic: string }> {
     try {
+      const urls = await this.getUrls(data.topic);
+      console.log(urls);
+      if (Array.isArray(urls) && !urls.includes(data.url)) {
+        await this.saveUrl(data, urls);
+      }
       await DBService.redisSubscriber.subscribe(
-        topic,
+        data.topic,
         this.subscriptionListener,
       );
-      return { url, topic };
+      // console.log(urls);
+      return data;
     } catch (error) {
+      console.log(error);
       handleException(error);
     }
   }
 
-  async publishTopic(topic: string, body: any): Promise<{ status: string }> {
+  async publishTopic(data: {
+    topic: string;
+    body: any;
+  }): Promise<{ status: string }> {
     try {
-      await DBService.redisClient.publish(topic, JSON.stringify(body));
+      await DBService.redisClient.publish(
+        data.topic,
+        JSON.stringify(data.body),
+      );
       return { status: 'published' };
     } catch (error) {
       console.log(error);
@@ -120,7 +134,34 @@ export class DBService {
         }), // TODO: use hSet
       );
     } catch (error) {
-      handleException(error);
+      throw error;
+    }
+  }
+
+  private async saveUrl(
+    data: { url: string; topic: string },
+    urls?: string[],
+  ): Promise<void> {
+    try {
+      const existingUrls = Array.isArray(urls)
+        ? [...urls]
+        : await this.getUrls(data.topic);
+      existingUrls.push(data.url);
+      await DBService.redisClient.set(
+        `topic-${data.topic}`,
+        JSON.stringify(existingUrls),
+      );
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  private async getUrls(topic: string): Promise<string[]> {
+    try {
+      const data = await DBService.redisClient.get(`topic-${topic}`);
+      return JSON.parse(data);
+    } catch (error) {
+      throw error;
     }
   }
 
@@ -133,11 +174,30 @@ export class DBService {
       );
       return apiKey;
     } catch (error) {
-      handleException(error);
+      throw error;
     }
   }
 
-  private subscriptionListener: PubSubListener = (channel, message) => {
-    console.log(`[redis]: ${channel} : ${message}`);
+  private subscriptionListener: PubSubListener = async (message, topic) => {
+    try {
+      console.log(`[redis]: ${topic} : ${message}`);
+      const urls = await this.getUrls(topic);
+      const result = urls.map((url) =>
+        this.transmitMessage({ topic, message, url }),
+      );
+      Promise.all(result);
+    } catch (error) {
+      console.log(error); //TODO: handle error tracking
+    }
+  };
+
+  private transmitMessage = async (transmission: {
+    url: string;
+    message: string;
+    topic: string;
+  }) => {
+    const { message, topic, url } = transmission;
+    console.log(`[transmitting]: ${url}, ${topic}, ${message}`);
+    // return axios.post(url, { topic, message });
   };
 }
