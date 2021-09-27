@@ -19,10 +19,6 @@ export class PublishGuard implements CanActivate {
   }
 
   private isObject(value: unknown) {
-    return (
-      value != null &&
-      (typeof value === 'object' || typeof value === 'function') &&
-      !Array.isArray(value)
-    );
+    return value != null && typeof value === 'object' && !Array.isArray(value);
   }
 }
