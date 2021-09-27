@@ -2,8 +2,9 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisClientType } from 'redis/dist/lib/client';
-import { handleException } from '../util';
 import { PubSubListener } from 'redis/dist/lib/commands-queue';
+import { handleException } from '../util';
+import { isUUID } from 'class-validator';
 /**
  * redis states:
  * connect: re-connecting
@@ -59,6 +60,7 @@ export class DBService {
 
   async isValidApiKey(apiKey: string): Promise<boolean> {
     try {
+      if (!isUUID(apiKey)) return false;
       const existingApiKey = await DBService.redisClient.get(
         `apiKey-${apiKey}`,
       );
