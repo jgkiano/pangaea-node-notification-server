@@ -3,6 +3,7 @@ import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisClientType } from 'redis/dist/lib/client';
 import { handleException } from '../util';
+import { PubSubListener } from 'redis/dist/lib/commands-queue';
 /**
  * redis states:
  * connect: re-connecting
@@ -16,6 +17,7 @@ import { handleException } from '../util';
 @Injectable()
 export class DBService {
   private static redisClient: RedisClientType;
+  private static redisSubscriber: RedisClientType;
   private static REDIS_HOST = process.env.REDIS_HOST || 'localhost';
   private static REDIS_PORT = process.env.REDIS_PORT || 6379;
 
@@ -29,7 +31,14 @@ export class DBService {
         console.log('[redis]: connect...'),
       );
       DBService.redisClient.on('ready', () => console.log('[redis]: ready...'));
-      DBService.redisClient.connect().then(resolve).catch(reject);
+      DBService.redisClient
+        .connect()
+        .then(() => {
+          DBService.redisSubscriber = DBService.redisClient.duplicate();
+          return DBService.redisSubscriber.connect();
+        })
+        .then(resolve)
+        .catch(reject);
     });
   }
 
@@ -65,11 +74,15 @@ export class DBService {
     }
   }
 
+  async subscribeTopic(topic: string, url: string) {
+    DBService.redisSubscriber.subscribe(topic, this.handleOnMessage);
+  }
+
   private async createUser(username: string) {
     try {
       await DBService.redisClient.set(
         `user-${username}`,
-        JSON.stringify({ username, createdAt: Date.now(), id: uuidv4() }),
+        JSON.stringify({ username, createdAt: Date.now(), id: uuidv4() }), // TODO: use hSet
       );
     } catch (error) {
       handleException(error);
@@ -81,11 +94,13 @@ export class DBService {
       const apiKey = uuidv4();
       await DBService.redisClient.set(
         `apiKey-${username}`,
-        JSON.stringify({ userId: username, createdAt: Date.now(), apiKey }),
+        JSON.stringify({ userId: username, createdAt: Date.now(), apiKey }), // TODO: use hset
       );
       return apiKey;
     } catch (error) {
       handleException(error);
     }
   }
+
+  private async handleOnMessage(message, channel) {}
 }
