@@ -88,7 +88,11 @@ export class DBService {
     try {
       await DBService.redisClient.set(
         `user-${username}`,
-        JSON.stringify({ username, createdAt: Date.now(), id: uuidv4() }), // TODO: use hSet
+        JSON.stringify({
+          userId: username,
+          createdAt: Date.now(),
+          id: uuidv4(),
+        }), // TODO: use hSet
       );
     } catch (error) {
       handleException(error);
@@ -99,8 +103,8 @@ export class DBService {
     try {
       const apiKey = uuidv4();
       await DBService.redisClient.set(
-        `apiKey-${username}`,
-        JSON.stringify({ userId: username, createdAt: Date.now(), apiKey }), // TODO: use hset
+        `apiKey-${apiKey}`,
+        JSON.stringify({ userId: username, createdAt: Date.now() }), // TODO: use hset
       );
       return apiKey;
     } catch (error) {
