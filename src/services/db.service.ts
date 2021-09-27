@@ -32,6 +32,7 @@ export class DBService {
         },
         database: 1,
       });
+      // TODO: test maximum number of pulishers and subscribers and client connections
       DBService.redisClient.on('error', (error) => {
         console.log('[redis]', error);
       });
