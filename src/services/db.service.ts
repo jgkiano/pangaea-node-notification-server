@@ -82,8 +82,19 @@ export class DBService {
     }
   }
 
-  async subscribeTopic(topic: string, url: string) {
-    DBService.redisSubscriber.subscribe(topic, () => null);
+  async subscribeTopic(
+    topic: string,
+    url: string,
+  ): Promise<{ url: string; topic: string }> {
+    try {
+      await DBService.redisSubscriber.subscribe(
+        topic,
+        this.subscriptionListener,
+      );
+      return { url, topic };
+    } catch (error) {
+      handleException(error);
+    }
   }
 
   private async createUser(username: string) {
@@ -113,4 +124,8 @@ export class DBService {
       handleException(error);
     }
   }
+
+  subscriptionListener: PubSubListener = (channel, message) => {
+    console.log(`[redis]: ${channel} : ${message}`);
+  };
 }
