@@ -96,18 +96,17 @@ export class DBService {
   async subscribeTopic(data: {
     topic: string;
     url: string;
-    apiKey: string;
   }): Promise<{ url: string; topic: string }> {
-    console.log(data);
     try {
       const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
-      await DBService.redisClient.HSET(key, data.apiKey, data.url);
+      await DBService.redisClient.sAdd(key, data.url);
       await DBService.redisSubscriber.subscribe(
         key,
         DBService.subscriptionListener,
       );
       return data;
     } catch (error) {
+      console.log(error);
       handleException(error);
     }
   }
@@ -156,7 +155,7 @@ export class DBService {
   ) => {
     try {
       console.log(`[redis]: ${topic} : ${message}`);
-      const urls = (await DBService.redisClient.hVals(topic)) || [];
+      const urls = (await DBService.redisClient.sMembers(topic)) || [];
       const result = urls.map((url) =>
         DBService.transmitMessage({ topic, message, url }),
       );
