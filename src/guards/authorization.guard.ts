@@ -2,9 +2,8 @@ import {
   Injectable,
   CanActivate,
   ExecutionContext,
-  HttpException,
+  UnauthorizedException,
 } from '@nestjs/common';
-import validator from 'validator';
 import { DBService } from '../services/db.service';
 
 type AuthRequest = {
@@ -21,6 +20,6 @@ export class AuthorizationGuard implements CanActivate {
     if (this.dbService.isApiKeyValid(apiKey)) {
       return true;
     }
-    throw new HttpException('Unauthorized', 401);
+    throw new UnauthorizedException('Unauthorized');
   }
 }
