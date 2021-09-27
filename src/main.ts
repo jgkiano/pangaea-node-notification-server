@@ -6,7 +6,11 @@ import { DBService } from './services/db.service';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  await DBService.initalize();
-  await app.listen(process.env.NODE_PORT || 3000);
+  try {
+    await DBService.initalize();
+    await app.listen(process.env.NODE_PORT || 3000);
+  } catch (error) {
+    console.log(error);
+  }
 }
 bootstrap();
