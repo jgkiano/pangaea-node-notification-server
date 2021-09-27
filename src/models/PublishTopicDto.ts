@@ -1,7 +1,6 @@
-import { IsNotEmpty, IsAlphanumeric } from 'class-validator';
+import { IsAlphanumeric } from 'class-validator';
 
 export class PublishTopicParamDto {
-  @IsNotEmpty()
   @IsAlphanumeric()
   topic: string;
 }
