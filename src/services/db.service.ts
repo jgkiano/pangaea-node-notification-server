@@ -5,6 +5,7 @@ import { RedisClientType } from 'redis/dist/lib/client';
 import { PubSubListener } from 'redis/dist/lib/commands-queue';
 import { handleException } from '../util';
 import { isUUID } from 'class-validator';
+
 /**
  * redis states:
  * connect: re-connecting
@@ -97,6 +98,16 @@ export class DBService {
     }
   }
 
+  async publishTopic(topic: string, body: any): Promise<{ status: string }> {
+    try {
+      await DBService.redisClient.publish(topic, JSON.stringify(body));
+      return { status: 'published' };
+    } catch (error) {
+      console.log(error);
+      handleException(error);
+    }
+  }
+
   private async createUser(username: string) {
     try {
       await DBService.redisClient.set(
@@ -125,7 +136,7 @@ export class DBService {
     }
   }
 
-  subscriptionListener: PubSubListener = (channel, message) => {
+  private subscriptionListener: PubSubListener = (channel, message) => {
     console.log(`[redis]: ${channel} : ${message}`);
   };
 }
