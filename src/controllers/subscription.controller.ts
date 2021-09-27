@@ -16,6 +16,9 @@ export class SubscriptionController {
     @Param() params: SubscriptionParamDto,
     @Body() body: SubscriptionBodyDto,
   ): Promise<{ url: string; topic: string }> {
-    return this.dbService.subscribeTopic(params.topic, body.url);
+    return this.dbService.subscribeTopic({
+      topic: params.topic,
+      url: body.url,
+    });
   }
 }

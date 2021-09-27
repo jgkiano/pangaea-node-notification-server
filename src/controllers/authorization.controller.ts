@@ -1,6 +1,6 @@
 import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { GenerateApiKeyDto } from '../models/GenerateApiKeyDto';
-import { ApiKeyCreationGuard } from '../guards/apiKeyCreationGuard';
+import { ApiKeyCreationGuard } from '../guards/apiKeyCreation.guard';
 import { DBService } from '../services/db.service';
 
 @Controller()

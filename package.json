@@ -26,6 +26,7 @@
     "@nestjs/core": "^8.0.0",
     "@nestjs/platform-express": "^8.0.0",
     "@types/uuid": "^8.3.1",
+    "axios": "^0.21.4",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "redis": "^4.0.0-rc.2",

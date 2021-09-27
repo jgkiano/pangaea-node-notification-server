@@ -18,6 +18,6 @@ export class PublishController {
     @Param() params: PublishTopicParamDto,
     @Body() body: PublishTopicBodyDto,
   ): Promise<{ status: string }> {
-    return this.dbService.publishTopic(params.topic, body);
+    return this.dbService.publishTopic({ body, topic: params.topic });
   }
 }
