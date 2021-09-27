@@ -157,7 +157,7 @@ export class DBService {
       console.log(`[redis]: ${topic} : ${message}`);
       const urls = (await DBService.redisClient.sMembers(topic)) || [];
       const result = urls.map((url) =>
-        DBService.transmitMessage({ topic, message, url }),
+        DBService.transmitMessage({ topic, data: JSON.parse(message), url }),
       );
       Promise.all(result);
     } catch (error) {
@@ -167,11 +167,13 @@ export class DBService {
 
   private static transmitMessage = async (transmission: {
     url: string;
-    message: string;
+    data: {
+      [key: string]: any;
+    };
     topic: string;
   }) => {
-    const { message, topic, url } = transmission;
-    console.log(`[transmitting]: ${url}, ${topic}, ${message}`);
+    const { data, topic, url } = transmission;
+    console.log(`[transmitting]: ${url}, ${topic}, ${data}`);
     // return axios.post(url, { topic, message });
   };
 }
