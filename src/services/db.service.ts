@@ -1,11 +1,15 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common';
 import { createClient } from 'redis';
 import { v4 as uuidv4 } from 'uuid';
 import { RedisClientType } from 'redis/dist/lib/client';
 import { PubSubListener } from 'redis/dist/lib/commands-queue';
 import axios from 'axios';
 import { handleException } from '../util';
-import { isUUID } from 'class-validator';
+import { isAlphanumeric, isUUID } from 'class-validator';
 
 /**
  * redis states:
@@ -62,9 +66,12 @@ export class DBService {
 
   async isExistingUser(username: string): Promise<boolean> {
     try {
-      const key = `${DBService.DB_USER_PREFIX}${username}`;
-      const exists = await DBService.redisClient.exists(key);
-      return exists;
+      if (isAlphanumeric(username)) {
+        const key = `${DBService.DB_USER_PREFIX}${username}`;
+        const exists = await DBService.redisClient.exists(key);
+        return exists;
+      }
+      throw new BadRequestException('provide a valid username');
     } catch (error) {
       handleException(error);
     }
