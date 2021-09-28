@@ -5,10 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { DBService } from '../services/db.service';
-
-type AuthRequest = {
-  headers: { authorization?: string };
-};
+import { AuthRequest } from '../types/';
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
