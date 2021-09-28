@@ -5,6 +5,6 @@ import { SuccessPingResponse } from '../types';
 export class SubscriberController {
   @Get()
   ping(): SuccessPingResponse {
-    return { message: 'API live! 🕺' };
+    return { message: 'Subscriber API live! 🕺' };
   }
 }
