@@ -6,6 +6,7 @@ import {
   PublishTopicBodyDto,
 } from '../models/PublishTopicDto';
 import { DBService } from '../services/db.service';
+import { PublishToTopicSuccessResponse } from '../types';
 
 @Controller('publish')
 @UseGuards(AuthorizationGuard)
@@ -17,7 +18,7 @@ export class PublishController {
   publish(
     @Param() params: PublishTopicParamDto,
     @Body() body: PublishTopicBodyDto,
-  ): Promise<{ status: string }> {
+  ): Promise<PublishToTopicSuccessResponse> {
     return this.dbService.publishTopic({ body, topic: params.topic });
   }
 }

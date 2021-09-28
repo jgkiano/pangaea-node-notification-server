@@ -9,3 +9,16 @@ export type AuthRequest = {
 export type ApiKeyCreationRequest = {
   username?: string;
 };
+
+export type GenerateApiKeySuccessResponse = {
+  apiKey: string;
+};
+
+export type PublishToTopicSuccessResponse = {
+  status: 'published' | 'error';
+};
+
+export type SubscriptionToTopicSuccessResponse = {
+  url: string;
+  topic: string;
+};
