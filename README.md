@@ -32,10 +32,26 @@ Publisher server will be available on [`http://localhost:8000`](http://localhost
 
 Subscriber server will be available on [`http://localhost:9000`](http://localhost:9000)
 
+## Privacy
+
+Redis pub/sub is used underneath, there for any messages published is not stored but [fired and forgotten](https://redis.io/topics/pubsub)
+
 ## Documentation
 
 **(important)** Before posting any data you'll first need to generate an API Key. Full documentation can be found [here](https://documenter.getpostman.com/view/664084/UUxzC8L5).
 
-## Privacy
+## Testing
 
-Redis pub/sub is used underneath, there for any messages published is not stored but [fired and forgotten](https://redis.io/topics/pubsub)
+### Unit testing
+
+```s
+yarn test
+```
+
+### E2E testing
+
+**(important)** Make sure to have a running instance of redis set up
+
+```s
+yarn test:e2e
+```
