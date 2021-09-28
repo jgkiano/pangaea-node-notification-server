@@ -1,10 +1,43 @@
-import { Controller, Get } from '@nestjs/common';
-import { SuccessPingResponse } from '../types';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+
+type Notifications = {
+  [key: string]: {
+    [key: string]: any[];
+  };
+};
+const notifications: Notifications = {};
 
 @Controller()
 export class SubscriberController {
   @Get()
-  ping(): SuccessPingResponse {
-    return { message: 'Subscriber API live! 🕺' };
+  getAllNotifications() {
+    return notifications;
+  }
+
+  @Get(':subscriber')
+  getSubscriberNotifications(@Param() params: { subscriber: string }) {
+    return notifications[params.subscriber] || [];
+  }
+
+  @Post(':subscriber')
+  saveNotification(
+    @Param() params: { subscriber: string },
+    @Body() body: { topic: string; data: any },
+  ) {
+    const { subscriber } = params;
+    if (
+      notifications[subscriber] &&
+      Array.isArray(notifications[subscriber][body.topic])
+    ) {
+      const existingNotifications = notifications[subscriber][body.topic];
+      notifications[subscriber][body.topic] = [
+        body.data,
+        ...existingNotifications,
+      ];
+    } else {
+      notifications[subscriber] = {};
+      notifications[subscriber][body.topic] = [body.data];
+    }
+    return notifications[subscriber];
   }
 }
