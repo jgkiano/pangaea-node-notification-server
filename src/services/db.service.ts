@@ -67,6 +67,11 @@ export class DBService {
     });
   }
 
+  static async flush() {
+    // TODO: check process.env.NODE_ENVIRONMENT, only flush if not production
+    await DBService.redisClient.flushAll();
+  }
+
   async isExistingUser(username: string): Promise<boolean> {
     try {
       if (isAlphanumeric(username)) {
@@ -116,7 +121,7 @@ export class DBService {
         key,
         DBService.subscriptionListener,
       );
-      return data;
+      return { url: data.url, topic: data.topic };
     } catch (error) {
       console.log(error);
       handleException(error);
@@ -185,11 +190,6 @@ export class DBService {
         DBService.transmitMessage({ topic, data: JSON.parse(message), url }),
       );
       await Promise.all(result);
-      console.log(
-        `[transmission]: transmission complete: ${topic}, ${JSON.stringify(
-          message,
-        )}`,
-      );
     } catch (error) {
       console.log(error); //TODO: handle error tracking
     }
@@ -203,7 +203,7 @@ export class DBService {
     topic: string;
   }) => {
     const { data, topic, url } = transmission;
-    console.log(`[transmitting]: ${url}, ${topic}, ${data}`);
     return axios.post(url, { topic, data });
+    // .then((res) => console.log(res.data));
   };
 }
