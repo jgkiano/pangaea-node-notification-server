@@ -179,12 +179,16 @@ export class DBService {
     topic,
   ) => {
     try {
-      console.log(`[redis]: ${topic} : ${message}`);
       const urls = (await DBService.redisClient.sMembers(topic)) || [];
       const result = urls.map((url) =>
         DBService.transmitMessage({ topic, data: JSON.parse(message), url }),
       );
-      Promise.all(result);
+      await Promise.all(result);
+      console.log(
+        `[transmission]: transmission complete: ${topic}, ${JSON.stringify(
+          message,
+        )}`,
+      );
     } catch (error) {
       console.log(error); //TODO: handle error tracking
     }
