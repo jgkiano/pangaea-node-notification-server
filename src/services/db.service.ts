@@ -203,7 +203,6 @@ export class DBService {
     topic: string;
   }) => {
     const { data, topic, url } = transmission;
-    return axios.post(url, { topic, data });
-    // .then((res) => console.log(res.data));
+    return axios.post(url, { topic, data }).catch(console.log); // TODO: handle errors
   };
 }
