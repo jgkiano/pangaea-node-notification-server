@@ -8,7 +8,9 @@ app.get('/', (_req, res) => res.json({ message: 'subscriber API live! 🥳' }));
 
 app.post('/:subscriber', (req, res) => {
   const { subscriber } = req.params;
-  res.json({ subscriber, data: req.body });
+  const response = { subscriber, data: req.body };
+  console.log(response);
+  res.json({ subscriber, ...req.body });
 });
 
 app.listen(PORT, () =>
