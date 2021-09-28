@@ -22,10 +22,12 @@ export class SubscriptionController {
   async subscribe(
     @Param() params: SubscriptionParamDto,
     @Body() body: SubscriptionBodyDto,
+    @Headers() headers: { authorization: string },
   ): Promise<{ url: string; topic: string }> {
     return this.dbService.subscribeTopic({
       topic: params.topic,
       url: body.url,
+      apiKey: headers.authorization,
     });
   }
 }
