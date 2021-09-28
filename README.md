@@ -18,11 +18,15 @@ To run this project you must have the following installed:
 
 Once you've finished installation of the above, run the below command in the root project directory
 
-`$ bash start-server.sh`
+```s
+bash start-server.sh
+```
 
 or
 
+```s
 `$ yarn start`
+```
 
 Publisher server will be available on [`http://localhost:8000`](http://localhost:8000)
 
