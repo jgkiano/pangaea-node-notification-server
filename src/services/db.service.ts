@@ -187,7 +187,11 @@ export class DBService {
     try {
       const urls = (await DBService.redisClient.sMembers(topic)) || [];
       const result = urls.map((url) =>
-        DBService.transmitMessage({ topic, data: JSON.parse(message), url }),
+        DBService.transmitMessage({
+          topic: topic.replace('topic-', ''),
+          data: JSON.parse(message),
+          url,
+        }),
       );
       await Promise.all(result);
     } catch (error) {
