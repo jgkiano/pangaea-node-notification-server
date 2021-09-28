@@ -25,6 +25,7 @@ export class SubscriberController {
     @Body() body: { topic: string; data: any },
   ) {
     const { subscriber } = params;
+    console.log(`${subscriber}: ${JSON.stringify(body)}`);
     if (
       notifications[subscriber] &&
       Array.isArray(notifications[subscriber][body.topic])
