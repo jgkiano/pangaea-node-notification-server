@@ -38,6 +38,7 @@ export class SubscriberController {
       notifications[subscriber] = {};
       notifications[subscriber][body.topic] = [body.data];
     }
+    console.log(JSON.stringify(notifications));
     return notifications[subscriber];
   }
 }
