@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from './controllers/app.controller';
 import { PublishController } from './controllers/publish.controller';
 import { SubscriptionController } from './controllers/subscription.controller';
 import { AuthorizationController } from './controllers/authorization.controller';
+import { DBService } from './services/db.service';
 
 @Module({
   imports: [],
@@ -13,6 +13,6 @@ import { AuthorizationController } from './controllers/authorization.controller'
     SubscriptionController,
     AuthorizationController,
   ],
-  providers: [AppService],
+  providers: [DBService],
 })
 export class AppModule {}
