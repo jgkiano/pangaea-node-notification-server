@@ -1,6 +1,6 @@
 # Pangaea Node Notification Server
 
-A pub/sub based server that will publish messages to webhooks subscribed to a particular topic.
+A pub/sub based server that will publish messages to webhooks subscribed to particular topic(s).
 
 Built with ❤️ using
 
@@ -34,7 +34,7 @@ Subscriber server will be available on [`http://localhost:9000`](http://localhos
 
 ## Documentation
 
-**(important)** Before posting any data you'll first need to generate an API Key. Full documentation can be found [here]().
+**(important)** Before posting any data you'll first need to generate an API Key. Full documentation can be found [here](https://documenter.getpostman.com/view/664084/UUxzC8L5).
 
 ## Privacy
 
