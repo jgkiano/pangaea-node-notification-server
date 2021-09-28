@@ -39,12 +39,14 @@ export class DBService {
         });
         // TODO: test maximum number of pulishers and subscribers and client connections
         DBService.redisClient.on('error', (error) => {
-          console.log('[redis]', error);
+          console.log('[redis]:', error);
         });
         DBService.redisClient.on('connect', () =>
-          console.log('[redis', 'connecting..'),
+          console.log('[redis]:', 'connecting..'),
         );
-        DBService.redisClient.on('ready', () => console.log('[redis', 'ready'));
+        DBService.redisClient.on('ready', () =>
+          console.log('[redis]:', 'ready'),
+        );
         await DBService.redisClient.connect();
         DBService.redisSubscriber = DBService.redisClient.duplicate();
         await DBService.redisSubscriber.connect();
@@ -177,12 +179,16 @@ export class DBService {
     topic,
   ) => {
     try {
-      console.log(`[redis]: ${topic} : ${message}`);
       const urls = (await DBService.redisClient.sMembers(topic)) || [];
       const result = urls.map((url) =>
         DBService.transmitMessage({ topic, data: JSON.parse(message), url }),
       );
-      Promise.all(result);
+      await Promise.all(result);
+      console.log(
+        `[transmission]: transmission complete: ${topic}, ${JSON.stringify(
+          message,
+        )}`,
+      );
     } catch (error) {
       console.log(error); //TODO: handle error tracking
     }
@@ -197,6 +203,6 @@ export class DBService {
   }) => {
     const { data, topic, url } = transmission;
     console.log(`[transmitting]: ${url}, ${topic}, ${data}`);
-    // return axios.post(url, { topic, message });
+    return axios.post(url, { topic, data });
   };
 }
