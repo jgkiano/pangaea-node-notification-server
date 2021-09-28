@@ -5,10 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { DBService } from '../services/db.service';
-
-type ApiKeyCreationRequest = {
-  username: string;
-};
+import { ApiKeyCreationRequest } from '../types';
 
 @Injectable()
 export class ApiKeyCreationGuard implements CanActivate {
@@ -16,10 +13,9 @@ export class ApiKeyCreationGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     try {
-      const { username }: ApiKeyCreationRequest = context
-        .switchToHttp()
-        .getRequest().body;
-      const isExistingUser = await this.dbService.isExistingUser(username);
+      const body = context.switchToHttp().getRequest()
+        .body as ApiKeyCreationRequest;
+      const isExistingUser = await this.dbService.isExistingUser(body.username);
       if (isExistingUser) throw new ConflictException('user already exists');
       return !isExistingUser;
     } catch (error) {
