@@ -9,7 +9,6 @@
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
@@ -20,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
-    "redis": "docker rm redis-pangaea || docker run --name redis-pangaea -it -p 6379:6379 redis:alpine"
+    "redis": "docker rm -f redis-pangaea || docker run --name redis-pangaea -it -p 6379:6379 redis:alpine",
+    "start": "docker rm -f redis-pangaea || echo \"Running redis for the first time..\" && docker run -d --name redis-pangaea -p 6379:6379 redis:alpine && nest build && nest start"
   },
   "dependencies": {
     "@nestjs/common": "^8.0.0",

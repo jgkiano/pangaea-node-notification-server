@@ -4,8 +4,8 @@ import { AppModule } from './app.module';
 import { DBService } from './services/db.service';
 import { SubscriberModule } from './external_subscriber/subscriber.module';
 
-const PUBLISHER_SERVER_PORT = process.env.NODE_PORT || 3000;
-const SUBSCRIBER_SERVER_PORT = process.env.SUBSCRIBER_NODE_PORT || 4000;
+const PUBLISHER_SERVER_PORT = process.env.NODE_PORT || 8000;
+const SUBSCRIBER_SERVER_PORT = process.env.SUBSCRIBER_NODE_PORT || 9000;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
