@@ -22,3 +22,7 @@ export type SubscriptionToTopicSuccessResponse = {
   url: string;
   topic: string;
 };
+
+export type SuccessPingResponse = {
+  message: string;
+};

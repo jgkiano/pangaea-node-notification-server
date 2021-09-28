@@ -12,7 +12,7 @@ import {
   SubscriptionParamDto,
 } from '../models/SubscriptionDto';
 import { DBService } from '../services/db.service';
-import { SubscriptionToTopicSuccessResponse } from '../types';
+import { AuthHeader, SubscriptionToTopicSuccessResponse } from '../types';
 
 @Controller('subscribe')
 @UseGuards(AuthorizationGuard)
@@ -23,7 +23,7 @@ export class SubscriptionController {
   async subscribe(
     @Param() params: SubscriptionParamDto,
     @Body() body: SubscriptionBodyDto,
-    @Headers() headers: { authorization: string },
+    @Headers() headers: AuthHeader,
   ): Promise<SubscriptionToTopicSuccessResponse> {
     return this.dbService.subscribeTopic({
       topic: params.topic,

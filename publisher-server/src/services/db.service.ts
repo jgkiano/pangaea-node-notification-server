@@ -10,6 +10,7 @@ import { PubSubListener } from 'redis/dist/lib/commands-queue';
 import axios from 'axios';
 import { handleException } from '../util';
 import { isAlphanumeric, isUUID } from 'class-validator';
+import { PublishToTopicSuccessResponse } from '../types';
 
 /**
  * redis states:
@@ -139,7 +140,7 @@ export class DBService {
   async publishTopic(data: {
     topic: string;
     body: any;
-  }): Promise<{ status: 'published' }> {
+  }): Promise<PublishToTopicSuccessResponse> {
     try {
       const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
       await DBService.redisClient.publish(key, JSON.stringify(data.body));

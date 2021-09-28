@@ -1,8 +1,5 @@
 import { Controller, Get } from '@nestjs/common';
-
-type SuccessPingResponse = {
-  message: string;
-};
+import { SuccessPingResponse } from '../types';
 
 @Controller()
 export class AppController {
