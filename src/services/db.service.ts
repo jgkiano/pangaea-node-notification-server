@@ -96,10 +96,12 @@ export class DBService {
   async subscribeTopic(data: {
     topic: string;
     url: string;
+    apiKey: string;
   }): Promise<{ url: string; topic: string }> {
     try {
       const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
       await DBService.redisClient.sAdd(key, data.url);
+      await DBService.redisClient.sAdd(data.apiKey, data.url); // keeps track of apiKeys <=> urls[]
       await DBService.redisSubscriber.subscribe(
         key,
         DBService.subscriptionListener,
@@ -109,6 +111,20 @@ export class DBService {
       console.log(error);
       handleException(error);
     }
+  }
+
+  async unsubscribeTopic(data: { topic: string; url: string; apiKey: string }) {
+    try {
+      const ownsUrl = await DBService.redisClient.sIsMember(
+        data.apiKey,
+        data.url,
+      );
+      if (ownsUrl) {
+        const key = `${DBService.DB_TOPIC_PREFIX}${data.topic}`;
+        await DBService.redisClient.sRem(key, data.url);
+      }
+      return { status: 'unsubscribed' };
+    } catch (error) {}
   }
 
   async publishTopic(data: {
