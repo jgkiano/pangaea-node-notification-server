@@ -16,7 +16,7 @@ To run this project you must have the following installed:
 - [Node](https://nodejs.org/en/)
 - (Optional) [Yarn v1](https://classic.yarnpkg.com/lang/en/)
 
-Once you've finished installation of the above, run the below command on your terminal
+Once you've finished installation of the above, run the below command in the root project directory
 
 `$ bash start-server.sh`
 
