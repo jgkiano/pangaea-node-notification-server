@@ -25,7 +25,7 @@ bash start-server.sh
 or
 
 ```s
-`$ yarn start`
+yarn start
 ```
 
 Publisher server will be available on [`http://localhost:8000`](http://localhost:8000)
