@@ -16,7 +16,11 @@ To run this project you must have the following installed:
 - [Node](https://nodejs.org/en/)
 - (Optional) [Yarn v1](https://classic.yarnpkg.com/lang/en/)
 
-Once you've finished installation of the above, run the below command in the root project directory
+Once you've finished installation of the above, install dependancies by running the below command in the root project directory
+
+```s
+yarn install
+```
 
 ```s
 bash start-server.sh
@@ -49,8 +53,6 @@ yarn test
 ```
 
 ### E2E testing
-
-**(important)** Make sure to have a running instance of redis set up
 
 ```s
 yarn test:e2e
