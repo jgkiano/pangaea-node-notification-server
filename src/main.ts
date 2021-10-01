@@ -18,6 +18,12 @@ async function bootstrap() {
     console.log(`started publisher server on port: ${PUBLISHER_SERVER_PORT}`);
     await subscriberApp.listen(SUBSCRIBER_SERVER_PORT);
     console.log(`started subscriber server on port: ${SUBSCRIBER_SERVER_PORT}`);
+    process.on('exit', async () => {
+      await DBService.quit();
+      await subscriberApp.close();
+      await app.close();
+      process.exit();
+    });
   } catch (error) {
     console.log(error);
   }
