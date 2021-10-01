@@ -62,12 +62,12 @@ describe('AppController (e2e)', () => {
     return request(app.getHttpServer())
       .post('/subscribe/food')
       .set({ authorization: apiKey, Accept: 'application/json' })
-      .send({ url: 'http://localhost:4000/test1' })
+      .send({ url: 'http://localhost:9000/test1' })
       .expect(201)
       .then((response) => {
         const { topic, url } = response.body;
         expect(topic).toEqual('food');
-        expect(url).toEqual('http://localhost:4000/test1');
+        expect(url).toEqual('http://localhost:9000/test1');
       });
   });
 
@@ -82,13 +82,9 @@ describe('AppController (e2e)', () => {
       });
   });
 
-  it('[Subscriber] /:subscriber', async () => {
-    await new Promise((r) => setTimeout(r, 500));
-    request('http://localhost:4000')
-      .get('/test1')
-      .expect(200)
-      .then((response) => {
-        expect(response.body).toBeTruthy(); // TODO: probably use super agant
-      });
+  afterAll(async () => {
+    await DBService.quit();
+    await subscriberApp.close();
+    await app.close();
   });
 });
