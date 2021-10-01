@@ -128,6 +128,17 @@ export class DBService {
     }
   }
 
+  static async quit() {
+    try {
+      await DBService.redisClient.quit();
+      await DBService.redisSubscriber.unsubscribe();
+      DBService.redisSubscriber.removeAllListeners();
+      await DBService.redisSubscriber.quit();
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
   async unsubscribeTopic(data: { topic: string; url: string; apiKey: string }) {
     try {
       const ownsUrl = await DBService.redisClient.sIsMember(
@@ -207,6 +218,6 @@ export class DBService {
     topic: string;
   }) => {
     const { data, topic, url } = transmission;
-    return axios.post(url, { topic, data }).catch(console.log); // TODO: handle errors
+    return axios.post(url, { topic, data }).catch(() => null); // TODO: handle errors
   };
 }
